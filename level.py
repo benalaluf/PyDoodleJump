@@ -16,18 +16,18 @@ class Spring(Sprite):
     Inherits the Sprite class.
     """
 
-    WIDTH = 30
-    HEIGHT = 25
+    WIDTH = 20
+    HEIGHT = 17
 
     def __init__(self, parent: Sprite, image=config.PLATFORM_SPRING_IMAGE,
                  force=config.PLAYER_SPRING_JUMPFORCE):
         self.parent = parent
-        super().__init__(self._get_inital_pos()[0], self._get_inital_pos()[1],
+        super().__init__(self.get_inital_pos()[0], self.get_inital_pos()[1]+3,
                          Spring.WIDTH, Spring.HEIGHT, image)
         self.force = force
 
-    def _get_inital_pos(self):
-        x = self.parent.rect.centerx - Spring.WIDTH // 2
+    def get_inital_pos(self):
+        x = randint(self.parent.rect.left+20, self.parent.rect.right-20)
         y = self.parent.rect.y - Spring.HEIGHT
         return x, y
 

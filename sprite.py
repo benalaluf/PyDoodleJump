@@ -21,7 +21,7 @@ class Sprite:
     def image(self) -> Surface:
         return self._image
 
-    def set_image(self, image, w =None,  h=None):
+    def set_image(self, image, w=None, h=None):
         if w == None:
             w = self._h
         if h == None:

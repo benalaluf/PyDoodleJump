@@ -19,8 +19,6 @@ getsign = lambda x: copysign(1, x)
 class Player(Sprite, Singleton):
     def __init__(self, *args):
         Sprite.__init__(self, *args)
-        self.rect = self.rect.inflate(-20, 0)
-
         self.__startrect = self.rect.copy()
         self.__maxvelocity = Vector2(config.PLAYER_MAX_SPEED, 100)
         self.__startspeed = 1.5
@@ -50,7 +48,6 @@ class Player(Sprite, Singleton):
     def handle_event(self, event: Event) -> None:
         # Check if start moving
         if event.type == KEYDOWN:
-            print(event.key)
             # Moves player only on x-axis (left/right)
             if event.key == K_LEFT or event.key == K_a:
                 self._velocity.x = -self.__startspeed
