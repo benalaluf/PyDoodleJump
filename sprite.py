@@ -8,11 +8,10 @@ from camera import Camera
 class Sprite:
 
     # default constructor (must be called if overrided by inheritance)
-    def __init__(self, x: int, y: int, w: int, h: int, image: str):
+    def __init__(self, x: int, y: int, w: int, h: int, image: pygame.image):
         self._w = w
         self._h = h
-        self._image = pygame.image.load(image)
-        self._image = pygame.transform.scale(self._image, (w, h))
+        self._image = image
         self.rect = Rect(x, y, w, h)
         self.camera_rect = self.rect.copy()
 
@@ -26,7 +25,7 @@ class Sprite:
             w = self._h
         if h == None:
             h = self._h
-        self._image = pygame.image.load(image)
+        self._image = image
         self._image = pygame.transform.scale(self._image, (w, h))
 
     @property

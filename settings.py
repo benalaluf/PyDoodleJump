@@ -24,8 +24,8 @@ FOREST_GREEN = (87, 189, 68)
 
 # Player
 PLAYER_SIZE = (60,58 )
-PLAYER_IMAGE_RIGHT = "images/doodle_right.png"
-PLAYER_IMAGE_LEFT = "images/doodle_left.png"
+PLAYER_IMAGE_RIGHT = pygame.transform.scale(pygame.image.load("images/doodle_right.png"),PLAYER_SIZE)
+PLAYER_IMAGE_LEFT = pygame.transform.scale(pygame.image.load("images/doodle_left.png"),PLAYER_SIZE)
 PLAYER_COLOR = ANDROID_GREEN
 PLAYER_MAX_SPEED = 15
 PLAYER_JUMPFORCE = 15
@@ -35,13 +35,16 @@ GRAVITY = .45
 
 # Platforms
 PLATFORM_COLOR = FOREST_GREEN
-PLATFORM_COLOR_LIGHT = LIGHT_GREEN
-PLATFORM_BASE_IMAGE = "images/baseplatform.png"
-PLATFORM_BREAKABLE_IMAGE = "images/breakableplatform.png"
-PLATFORM_SPRING_IMAGE = "images/spring.png"
-PLATFORM_SPRING_OPEN_IMAGE = "images/spring opend.png"
-PLATFORM_TRAMP_IMAGE = "images/trampolin.png"
 PLATFORM_SIZE = (85, 23)
+PLATFORM_COLOR_LIGHT = LIGHT_GREEN
+PLATFORM_BASE_IMAGE = pygame.transform.scale(pygame.image.load("images/baseplatform.png"), PLATFORM_SIZE)
+PLATFORM_BREAKABLE_IMAGE = pygame.transform.scale(pygame.image.load("images/breakableplatform.png"),PLATFORM_SIZE)
+TRAMP_SIZE = (40, 15)
+SPRING_SIZE = (20, 17)
+
+PLATFORM_SPRING_IMAGE = pygame.transform.scale(pygame.image.load("images/spring.png"),SPRING_SIZE)
+PLATFORM_SPRING_OPEN_IMAGE = pygame.image.load("images/spring opend.png")
+PLATFORM_TRAMP_IMAGE = pygame.transform.scale(pygame.image.load("images/trampolin.png"),TRAMP_SIZE)
 PLATFORM_DISTANCE_GAP = (40, 100)
 MAX_PLATFORM_NUMBER = 40
 SPRING_SPAWN_CHANCE = 10
