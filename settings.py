@@ -10,7 +10,7 @@ init()
 XWIN, YWIN = 650, 1000  # Resolution
 HALF_XWIN, HALF_YWIN = XWIN / 2, YWIN / 2  # Center
 DISPLAY = (XWIN, YWIN)
-FLAGS = 1  # Fullscreen, resizeable...
+FLAGS = 0# Fullscreen, resizeable...
 FPS = 60  # Render frame rate
 
 # Colors
@@ -39,7 +39,7 @@ PLATFORM_SIZE = (85, 23)
 PLATFORM_COLOR_LIGHT = LIGHT_GREEN
 PLATFORM_BASE_IMAGE = pygame.transform.scale(pygame.image.load("images/baseplatform.png"), PLATFORM_SIZE)
 PLATFORM_BREAKABLE_IMAGE = pygame.transform.scale(pygame.image.load("images/breakableplatform.png"),PLATFORM_SIZE)
-TRAMP_SIZE = (40, 15)
+TRAMP_SIZE = (45, 20)
 SPRING_SIZE = (20, 17)
 
 PLATFORM_SPRING_IMAGE = pygame.transform.scale(pygame.image.load("images/spring.png"),SPRING_SIZE)

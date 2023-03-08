@@ -41,13 +41,13 @@ class Trampolin(Sprite):
     Inherits the Sprite class.
     """
 
-    WIDTH = 40
-    HEIGHT = 15
+    WIDTH = 45
+    HEIGHT = 20
 
     def __init__(self, parent: Sprite, image=config.PLATFORM_TRAMP_IMAGE,
                  force=config.PLAYER_TRAMP_JUMPFORCE):
         self.parent = parent
-        super().__init__(self._get_inital_pos()[0],self._get_inital_pos()[1],
+        super().__init__(self._get_inital_pos()[0],self._get_inital_pos()[1]+3,
                          Trampolin.WIDTH, Trampolin.HEIGHT, image)
         self.force = force
 
