@@ -1,4 +1,6 @@
 from random import randint
+
+import pygame
 from pygame import Surface
 import asyncio
 
@@ -22,17 +24,18 @@ class Spring(Sprite):
     def __init__(self, parent: Sprite, image=config.PLATFORM_SPRING_IMAGE,
                  force=config.PLAYER_SPRING_JUMPFORCE):
         self.parent = parent
-        super().__init__(self.get_inital_pos()[0], self.get_inital_pos()[1]+3,
+        super().__init__(self.get_inital_pos()[0], self.get_inital_pos()[1] + 3,
                          Spring.WIDTH, Spring.HEIGHT, image)
         self.force = force
 
     def get_inital_pos(self):
-        x = randint(self.parent.rect.left+20, self.parent.rect.right-20)
+        x = randint(self.parent.rect.left + 20, self.parent.rect.right - 20)
         y = self.parent.rect.y - Spring.HEIGHT
         return x, y
 
     def onCollide(self):
-        self.set_image(config.PLATFORM_SPRING_OPEN_IMAGE,h=60)
+        self.set_image(config.PLATFORM_SPRING_OPEN_IMAGE, h=60)
+        self.rect = pygame.Rect(self.rect.x, self.rect.y - 35, 20, 60)
 
 
 class Trampolin(Sprite):
@@ -47,7 +50,7 @@ class Trampolin(Sprite):
     def __init__(self, parent: Sprite, image=config.PLATFORM_TRAMP_IMAGE,
                  force=config.PLAYER_TRAMP_JUMPFORCE):
         self.parent = parent
-        super().__init__(self._get_inital_pos()[0],self._get_inital_pos()[1]+3,
+        super().__init__(self._get_inital_pos()[0], self._get_inital_pos()[1] + 3,
                          Trampolin.WIDTH, Trampolin.HEIGHT, image)
         self.force = force
 
@@ -64,12 +67,11 @@ class Platform(Sprite):
 
     # (Overriding inherited constructor: Sprite.__init__)
     def __init__(self, x: int, y: int, width: int, height: int,
-                 initial_spring=False, initial_tramp =False, breakable=False):
+                 initial_spring=False, initial_tramp=False, breakable=False):
         image = config.PLATFORM_BASE_IMAGE
         if breakable: image = config.PLATFORM_BREAKABLE_IMAGE
         super().__init__(x, y, width, height, image)
 
-        self.rect = self.getRect().inflate(0,-30)
         self.breakable = breakable
         self.__level = Level.instance
         self.__bonus = None
@@ -172,7 +174,7 @@ class Level(Singleton):
                 self.__platforms[-1].rect.y - offset,  # Y POS
                 *self.platform_size,  # SIZE
                 initial_spring=chance(self.spring_platform_chance),
-                initial_tramp=chance(self.tramp_platform_chance),# HAS A Bonus
+                initial_tramp=chance(self.tramp_platform_chance),  # HAS A Bonus
                 breakable=chance(self.breakable_platform_chance)))  # IS BREAKABLE
         else:
             # (just in case) no platform: add the base one

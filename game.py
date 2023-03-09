@@ -31,8 +31,8 @@ class Game(Singleton):
 
         # User Interface
         self.score = 0
-        self.score_txt = config.SMALL_FONT.render("0", 1, config.GRAY)
-        self.score_pos = pygame.math.Vector2(config.HALF_XWIN-15, 10)
+        self.score_txt = config.SMALL_FONT.render("0", 1, config.BLACK)
+        self.score_pos = pygame.math.Vector2(config.HALF_XWIN-25, 60)
 
         self.gameover_txt = config.LARGE_FONT.render("Game Over", 1, config.GRAY)
         self.gameover_rect = self.gameover_txt.get_rect(
