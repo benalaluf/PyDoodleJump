@@ -53,3 +53,7 @@ class Sprite:
             surface.blit(self._image, self.camera_rect)
         else:
             surface.blit(self._image, self.rect)
+
+    def collided(self, other_rect):
+        # Return True if self collided with other_rect
+        return self.rect.colliderect(other_rect)

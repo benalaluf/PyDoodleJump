@@ -24,8 +24,11 @@ FOREST_GREEN = (87, 189, 68)
 
 # Player
 PLAYER_SIZE = (60, 58)
+BULLET_SIZE = (20,20)
 PLAYER_IMAGE_RIGHT = pygame.transform.scale(pygame.image.load("images/doodle_right.png"), PLAYER_SIZE)
 PLAYER_IMAGE_LEFT = pygame.transform.scale(pygame.image.load("images/doodle_left.png"), PLAYER_SIZE)
+BULLET_IMAGE = pygame.transform.scale(pygame.image.load("images/bullet.png"), BULLET_SIZE)
+BULLET_SPEED = 60
 PLAYER_COLOR = ANDROID_GREEN
 PLAYER_MAX_SPEED = 15
 PLAYER_JUMPFORCE = 15

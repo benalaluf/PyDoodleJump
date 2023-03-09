@@ -1,3 +1,4 @@
+import math
 from math import copysign
 
 import pygame
@@ -33,6 +34,8 @@ class Player(Sprite, Singleton):
         self.deccel = .6
         self.dead = False
 
+        self.bullets = []
+
     def _fix_velocity(self) -> None:
         self._velocity.y = min(self._velocity.y, self.__maxvelocity.y)
         self._velocity.y = round(max(self._velocity.y, -self.__maxvelocity.y), 2)
@@ -58,11 +61,21 @@ class Player(Sprite, Singleton):
                 self._velocity.x = self.__startspeed
                 self._input = 1
                 self.set_image(config.PLAYER_IMAGE_RIGHT)
+
+
         # Check if stop moving
         elif event.type == KEYUP:
             if (event.key == K_LEFT or event.key == K_a and self._input == -1) or (
                     event.key == K_RIGHT or event.key == K_d and self._input == 1):
                 self._input = 0
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            print("pew")
+            x, y = pygame.mouse.get_pos()
+            # print(x,y)
+            print()
+            b = Player.Bullet(self.rect.centerx-10, self.rect.y, config.BULLET_SIZE[0], config.BULLET_SIZE[1],
+                              config.BULLET_IMAGE, config.BULLET_SPEED, x, y)
+            self.bullets.append(b)
 
     def jump(self, force: float = None) -> None:
         if not force: force = self._jumpforce
@@ -96,6 +109,8 @@ class Player(Sprite, Singleton):
                     platform.onCollide()
 
     def update(self) -> None:
+        for b in self.bullets:
+            b.move()
         if self.camera_rect.y > config.YWIN * 2:
             self.dead = True
             return
@@ -111,3 +126,24 @@ class Player(Sprite, Singleton):
         self.rect.y += self._velocity.y
 
         self.collisions()
+
+    class Bullet(Sprite):
+        def __init__(self, x, y, width, height, image, speed, targetx, targety):
+            super().__init__(x, y, width, height, image)
+            angle = math.atan2(targety - y, targetx - x)  # get angle to target in radians
+            print('Angle in degrees:', int(angle * 180 / math.pi))
+            self.speed = speed
+            self.dx = math.cos(angle) * speed
+            self.dy = math.sin(angle) * speed
+            self.x = x
+            self.y = y
+
+        # Override
+        def move(self):
+            # self.x and self.y are floats (decimals) so I get more accuracy
+            # if I change self.x and y and then convert to an integer for
+            # the rectangle.
+            self.x = self.x + self.dx
+            self.y = self.y + self.dy
+            self.rect.x = int(self.x)
+            self.rect.y = int(self.y)

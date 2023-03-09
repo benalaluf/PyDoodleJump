@@ -75,6 +75,8 @@ class Game(Singleton):
         self.window.fill(config.WHITE)
         self.lvl.draw(self.window)
         self.player.draw(self.window)
+        for b in self.player.bullets:
+            b.draw(self.window)
 
         # User Interface
         if self.player.dead:
