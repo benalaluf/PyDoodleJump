@@ -3,7 +3,8 @@ import random
 import pygame, sys
 
 # General SetUp
-from newGame.level import Platform
+from newGame.camera import Camera
+from newGame.level import Platform, Level
 from newGame.player import Player
 
 pygame.init()
@@ -15,17 +16,16 @@ screen_height = 1024
 screen = pygame.display.set_mode((screen_width, screen_height))
 background = pygame.image.load('images/background.png')
 
+# Camera
+Camera()
 
 # Player
 player = Player()
 player_group = pygame.sprite.Group()
 player_group.add(player)
 
-# Platform
-platform_group = pygame.sprite.Group()
-for platform in range(20):
-    new_platform = Platform('images/baseplatform.png',random.randint(0, screen_width), random.randint(0, screen_height))
-    platform_group.add(new_platform)
+# Platfor
+platform_group = Level()
 
 # Game Loop
 while True:
@@ -39,6 +39,7 @@ while True:
     pygame.display.flip()
     screen.blit(background, (0, 0))
     platform_group.draw(screen)
+    platform_group.update()
     player_group.draw(screen)
     player_group.update()
     clock.tick(120)

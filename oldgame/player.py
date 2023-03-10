@@ -7,11 +7,9 @@ from pygame.constants import *
 from pygame.math import Vector2
 from pygame.event import Event
 
-import level
-import player
 from singleton import Singleton
 from sprite import Sprite
-from level import Level
+from oldgame.level import Level
 import settings as config
 
 # Return the sign of a number: getsign(-5)-> -1

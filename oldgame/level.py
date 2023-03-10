@@ -76,6 +76,7 @@ class Platform(Sprite):
         self.__level = Level.instance
         self.__bonus = None
         self.__type = None
+        self.camera_rect = self.rect.copy()
         if initial_spring:
             self.add_bonus(Spring)
         if initial_tramp:

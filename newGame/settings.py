@@ -7,7 +7,7 @@ init()
 # ==================================
 
 # Window Settings
-XWIN, YWIN = 650, 1000  # Resolution
+XWIN, YWIN = 640, 1024  # Resolution
 HALF_XWIN, HALF_YWIN = XWIN / 2, YWIN / 2  # Center
 DISPLAY = (XWIN, YWIN)
 FLAGS = 0  # Fullscreen, resizeable...
@@ -51,9 +51,13 @@ PLATFORM_SPRING_OPEN_IMAGE = pygame.image.load("../images/spring opend.png")
 PLATFORM_TRAMP_IMAGE = pygame.transform.scale(pygame.image.load("../images/trampolin.png"), TRAMP_SIZE)
 PLATFORM_DISTANCE_GAP = (40, 150)
 MAX_PLATFORM_NUMBER = 30
-SPRING_SPAWN_CHANCE = 10
-TRAMP_SPAWN_CHANCE = 12
+SPRING_SPAWN_CHANCE = 1000000
+TRAMP_SPAWN_CHANCE = 30
 BREAKABLE_PLATFORM_CHANCE = 12
+MOVEABLE_PLATFORM_CHANCE = 0
+
+SPRING_IMAGES = (PLATFORM_SPRING_IMAGE,PLATFORM_SPRING_OPEN_IMAGE)
+TRAMP_IMAGES = (PLATFORM_TRAMP_IMAGE,PLATFORM_TRAMP_IMAGE )
 
 # Fonts
 LARGE_FONT = SysFont("arial-bold", 100)

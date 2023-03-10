@@ -1,3 +1,4 @@
+import asyncio
 from random import randint
 
 import pygame.image
@@ -5,6 +6,7 @@ import pygame.sprite as sprite
 from pygame import Surface
 
 import settings as config
+from newGame.camera import Camera
 from newGame.singleton import Singleton
 
 chance = lambda x: not randint(0, x)
@@ -12,14 +14,14 @@ chance = lambda x: not randint(0, x)
 
 class Spring(sprite.Sprite):
 
-    def __init__(self, parent: sprite.Sprite, images: pygame.image,
+    def __init__(self, parent: sprite.Sprite,
                  force=config.PLAYER_SPRING_JUMPFORCE):
         super().__init__()
-        self.images = images
-        self.image = images[0]
+        self.images = config.SPRING_IMAGES
+        self.image = self.images[0]
         self.rect = self.image.get_rect()
-        self.rect.midbottom = self.get_inital_pos()
         self.parent = parent
+        self.rect.midbottom = self.get_inital_pos()
         self.force = force
 
     def get_inital_pos(self):
@@ -29,6 +31,17 @@ class Spring(sprite.Sprite):
 
     def onCollide(self):
         self.image = self.images[1]
+
+    def draw(self, surface: Surface) -> None:
+        """ Render method,Should be called every frame after update.
+        :param surface pygame.Surface: the surface to draw on.
+        """
+        # If camera instancied: calculate render positon
+        if Camera.instance:
+            self.camera_rect = Camera.instance.apply(self)
+            surface.blit(self.image, self.camera_rect)
+        else:
+            surface.blit(self.image, self.rect)
 
 
 class Trampolin(sprite.Sprite):
@@ -40,14 +53,14 @@ class Trampolin(sprite.Sprite):
     WIDTH = 45
     HEIGHT = 20
 
-    def __init__(self, parent: sprite.Sprite, images: pygame.image,
+    def __init__(self, parent: sprite.Sprite,
                  force=config.PLAYER_TRAMP_JUMPFORCE):
         super().__init__()
-        self.images = images
+        self.images = config.TRAMP_IMAGES
         self.image = self.images[0]
         self.rect = self.image.get_rect()
-        self.rect.midbottom = self.get_inital_pos()
         self.parent = parent
+        self.rect.midbottom = self.get_inital_pos()
         self.force = force
 
     def get_inital_pos(self):
@@ -58,34 +71,57 @@ class Trampolin(sprite.Sprite):
     def onCollide(self):
         pass
 
+    def draw(self, surface: Surface) -> None:
+        """ Render method,Should be called every frame after update.
+        :param surface pygame.Surface: the surface to draw on.
+        """
+        # If camera instancied: calculate render positon
+        if Camera.instance:
+            self.camera_rect = Camera.instance.apply(self)
+            surface.blit(self.image, self.camera_rect)
+        else:
+            surface.blit(self.image, self.rect)
+
 
 class Platform(sprite.Sprite):
-    def __init__(self, picture_path, pos_x, pos_y,
+    def __init__(self, pos_x, pos_y,
                  initial_spring=False, initial_tramp=False, breakable=False, moveable=False):
         super().__init__()
-        self.image = pygame.image.load(picture_path)
+        if moveable:
+            self.image = config.PLATFORM_BASE_IMAGE
+        elif breakable:
+            self.image = config.PLATFORM_BREAKABLE_IMAGE
+        else:
+            self.image = config.PLATFORM_BASE_IMAGE
+
         self.rect = self.image.get_rect()
         self.rect.center = [pos_x, pos_y]
         self.__level = Level.instance
         self.breakable = breakable
         self.moveable = moveable
+        self.camera_rect = self.rect.copy()
         self.__bonus = None
         self.__type = None
-        self.x_speed = 0
+        self.min_x = randint(0, pos_x)
+        self.max_x = randint(self.min_x, config.XWIN)
+        self.speed = 2
+        if initial_spring:
+            self.add_bonus(Spring)
+        if initial_tramp:
+            self.add_bonus(Trampolin)
 
     @property
     def bonus(self):
         return self.__bonus
 
     def move(self):
-        min_x = randint(0, config.XWIN - 50)
-        max_x = randint(min_x, config.XWIN)
-        speed = 3
-        if self.rect.right > max_x:
-            speed *= -1
-        if self.rect.left < min_x:
-            speed *= -1
-        self.rect.center += speed
+
+        if self.rect.right > self.max_x:
+            self.speed *= -1
+        if self.rect.left < self.min_x:
+            self.speed *= -1
+
+        self.rect.x += self.speed
 
     def add_bonus(self, bonus_type: type) -> None:
         assert issubclass(bonus_type, (Spring, Trampolin)), "Not a valid bonus type !"
@@ -100,6 +136,7 @@ class Platform(sprite.Sprite):
             self.__level.remove_platform(self)
 
     def draw(self, surface: Surface) -> None:
+        surface.blit(self.image, self.rect)
         if self.__bonus:
             self.__bonus.draw(surface)
         if self.camera_rect.y + self.rect.height > config.YWIN:
@@ -110,7 +147,7 @@ class Platform(sprite.Sprite):
             self.move()
 
 
-class Level(Singleton):
+class Level(Singleton, pygame.sprite.Group):
     """
     A class to represent the level.
 
@@ -121,6 +158,7 @@ class Level(Singleton):
 
     # constructor called on new instance: Level()
     def __init__(self):
+        super().__init__()
         self.platform_size = config.PLATFORM_SIZE
         self.max_platforms = config.MAX_PLATFORM_NUMBER
         self.distance_min = min(config.PLATFORM_DISTANCE_GAP)
@@ -129,6 +167,7 @@ class Level(Singleton):
         self.spring_platform_chance = config.SPRING_SPAWN_CHANCE
         self.tramp_platform_chance = config.TRAMP_SPAWN_CHANCE
         self.breakable_platform_chance = config.BREAKABLE_PLATFORM_CHANCE
+        self.moveable_platform_chance = config.MOVEABLE_PLATFORM_CHANCE
 
         self.__platforms = []
         self.__to_remove = []
@@ -158,12 +197,12 @@ class Level(Singleton):
             # y position starting from last platform y pos +random offset
             offset = randint(self.distance_min, self.distance_max)
             self.__platforms.append(Platform(
-                randint(0, config.XWIN - self.platform_size[0]),  # X POS
-                self.__platforms[-1].rect.y - offset,  # Y POS
-                *self.platform_size,  # SIZE
+                randint(0, config.XWIN - self.platform_size[0]),
+                self.__platforms[-1].rect.y - offset,
                 initial_spring=chance(self.spring_platform_chance),
-                initial_tramp=chance(self.tramp_platform_chance),  # HAS A Bonus
-                breakable=chance(self.breakable_platform_chance)))  # IS BREAKABLE
+                initial_tramp=chance(self.tramp_platform_chance),
+                breakable=chance(self.breakable_platform_chance),
+                moveable=chance(self.moveable_platform_chance)))
         else:
             # (just in case) no platform: add the base one
             self.__platforms.append(self.__base_platform)
@@ -184,9 +223,13 @@ class Level(Singleton):
 
     def update(self) -> None:
         " Should be called each frame in main game loop for generation."
+        super().update()
+        for platform in self.__platforms:
+            self.add(platform)
         for platform in self.__to_remove:
             if platform in self.__platforms:
                 self.__platforms.remove(platform)
+                self.remove(platform)
         self.__to_remove = []
         asyncio.run(self._generation())
 

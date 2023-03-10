@@ -2,7 +2,7 @@ import pygame
 
 import settings as config
 from camera import Camera
-from level import Level
+from oldgame.level import Level
 from player import Player
 from singleton import Singleton
 
