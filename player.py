@@ -8,6 +8,7 @@ from pygame.math import Vector2
 from pygame.event import Event
 
 import level
+import player
 from singleton import Singleton
 from sprite import Sprite
 from level import Level
@@ -34,7 +35,10 @@ class Player(Sprite, Singleton):
         self.deccel = .6
         self.dead = False
 
+        self.lastkeypressed = ['d']
+
         self.bullets = []
+        self.__to_remove = []
 
     def _fix_velocity(self) -> None:
         self._velocity.y = min(self._velocity.y, self.__maxvelocity.y)
@@ -56,11 +60,21 @@ class Player(Sprite, Singleton):
                 self._velocity.x = -self.__startspeed
                 self._input = -1
                 self.set_image(config.PLAYER_IMAGE_LEFT)
+                self.lastkeypressed.append('a')
 
             elif event.key == K_RIGHT or event.key == K_d:
                 self._velocity.x = self.__startspeed
                 self._input = 1
                 self.set_image(config.PLAYER_IMAGE_RIGHT)
+                self.lastkeypressed.append('d')
+
+            elif event.key == K_UP or event.key == K_w:
+                self.set_image(config.PLAYER_IMAGE_SHOOT)
+                self.lastkeypressed.append('w')
+                b = Player.Bullet(self.rect.centerx - 10, self.rect.y, config.BULLET_SIZE[0], config.BULLET_SIZE[1],
+                                  config.BULLET_IMAGE, config.BULLET_SPEED, self.rect.centerx, self.rect.centery - 1000)
+                self.bullets.append(b)
+
 
 
         # Check if stop moving
@@ -68,14 +82,20 @@ class Player(Sprite, Singleton):
             if (event.key == K_LEFT or event.key == K_a and self._input == -1) or (
                     event.key == K_RIGHT or event.key == K_d and self._input == 1):
                 self._input = 0
+            if self.lastkeypressed[len(self.lastkeypressed) - 1] == 'w':
+                self.lastkeypressed.pop()
+                if self.lastkeypressed[len(self.lastkeypressed) - 1] == 'd':
+                    self.set_image(config.PLAYER_IMAGE_RIGHT)
+                elif self.lastkeypressed[len(self.lastkeypressed) - 1] == 'a':
+                    self.set_image(config.PLAYER_IMAGE_LEFT)
+
         if event.type == pygame.MOUSEBUTTONDOWN:
-            print("pew")
             x, y = pygame.mouse.get_pos()
             # print(x,y)
-            print()
-            b = Player.Bullet(self.rect.centerx-10, self.rect.y, config.BULLET_SIZE[0], config.BULLET_SIZE[1],
+            self.bullets.append(
+             Player.Bullet(self.rect.centerx - 10, self.rect.y, config.BULLET_SIZE[0], config.BULLET_SIZE[1],
                               config.BULLET_IMAGE, config.BULLET_SPEED, x, y)
-            self.bullets.append(b)
+            )
 
     def jump(self, force: float = None) -> None:
         if not force: force = self._jumpforce
@@ -109,8 +129,6 @@ class Player(Sprite, Singleton):
                     platform.onCollide()
 
     def update(self) -> None:
-        for b in self.bullets:
-            b.move()
         if self.camera_rect.y > config.YWIN * 2:
             self.dead = True
             return
@@ -125,25 +143,59 @@ class Player(Sprite, Singleton):
         self.rect.x = (self.rect.x + self._velocity.x) % (config.XWIN - self.rect.width)
         self.rect.y += self._velocity.y
 
+        for bullet in self.__to_remove:
+            if bullet in self.bullets:
+                self.bullets.remove(bullet)
+        self.__to_remove = []
+
+        for b in self.bullets:
+            b.move()
+
         self.collisions()
+
+    def remove_bullet(self, blt) -> bool:
+        """ Removes a platform safely.
+        :param plt Platform: the platform to remove
+        :return bool: returns true if platoform successfully removed
+        """
+        if blt in self.bullets:
+            self.__to_remove.append(blt)
+            return True
+        return False
+
+    def draw(self, surface: pygame.Surface) -> None:
+        super().draw(surface)
+        for bullet in self.bullets:
+            bullet.draw(surface)
 
     class Bullet(Sprite):
         def __init__(self, x, y, width, height, image, speed, targetx, targety):
             super().__init__(x, y, width, height, image)
             angle = math.atan2(targety - y, targetx - x)  # get angle to target in radians
-            print('Angle in degrees:', int(angle * 180 / math.pi))
+            # print('Angle in degrees:', int(angle * 180 / math.pi))
             self.speed = speed
             self.dx = math.cos(angle) * speed
             self.dy = math.sin(angle) * speed
             self.x = x
             self.y = y
+            self.player = Player.instance
 
-        # Override
         def move(self):
             # self.x and self.y are floats (decimals) so I get more accuracy
             # if I change self.x and y and then convert to an integer for
             # the rectangle.
+            self.update(self.dx, self.dy)
             self.x = self.x + self.dx
             self.y = self.y + self.dy
             self.rect.x = int(self.x)
             self.rect.y = int(self.y)
+
+        # Override
+        def draw(self, surface: pygame.Surface) -> None:
+            super().draw(surface)
+            if self.camera_rect.y + self.rect.height > config.YWIN:
+                self.player.remove_bullet(self)
+
+        def update(self, dx, dy):
+            self.dx = dx
+            self.dy = dy

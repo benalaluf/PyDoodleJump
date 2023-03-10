@@ -21,12 +21,13 @@ class Sprite:
         return self._image
 
     def set_image(self, image, w=None, h=None):
-        if w == None:
-            w = self._h
-        if h == None:
-            h = self._h
         self._image = image
-        self._image = pygame.transform.scale(self._image, (w, h))
+        if w is not None and h is not None:
+            self._image = pygame.transform.scale(self._image, (w, h))
+        if w is not None:
+            self._image = pygame.transform.scale(self._image, (w, self._h))
+        if h is not None:
+            self._image = pygame.transform.scale(self._image, (self._w, h))
 
     @property
     def color(self) -> tuple:
