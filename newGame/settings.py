@@ -25,10 +25,10 @@ FOREST_GREEN = (87, 189, 68)
 # Player
 PLAYER_SIZE = (60, 58)
 BULLET_SIZE = (15,15)
-PLAYER_IMAGE_RIGHT = pygame.transform.scale(pygame.image.load("../oldgame/images/doodle_right.png"), PLAYER_SIZE)
-PLAYER_IMAGE_LEFT = pygame.transform.scale(pygame.image.load("../oldgame/images/doodle_left.png"), PLAYER_SIZE)
-PLAYER_IMAGE_SHOOT = pygame.transform.scale(pygame.image.load("../oldgame/images/shoot_player.png"), (40, 80))
-BULLET_IMAGE = pygame.transform.scale(pygame.image.load("../oldgame/images/bullet.png"), BULLET_SIZE)
+PLAYER_IMAGE_RIGHT = pygame.transform.scale(pygame.image.load("images/doodle_r.png"), PLAYER_SIZE)
+PLAYER_IMAGE_LEFT = pygame.transform.scale(pygame.image.load("images/doodle_r.png"), PLAYER_SIZE)
+PLAYER_IMAGE_SHOOT = pygame.transform.scale(pygame.image.load("images/shoot_player.png"), (40, 80))
+BULLET_IMAGE = pygame.transform.scale(pygame.image.load("images/bullet.png"), BULLET_SIZE)
 BULLET_SPEED = 60
 PLAYER_COLOR = ANDROID_GREEN
 PLAYER_MAX_SPEED = 15
@@ -41,20 +41,22 @@ GRAVITY = .45
 PLATFORM_COLOR = FOREST_GREEN
 PLATFORM_SIZE = (80, 20)
 PLATFORM_COLOR_LIGHT = LIGHT_GREEN
-PLATFORM_BASE_IMAGE = pygame.transform.scale(pygame.image.load("../oldgame/images/baseplatform.png"), PLATFORM_SIZE)
-PLATFORM_BREAKABLE_IMAGE = pygame.transform.scale(pygame.image.load("../oldgame/images/breakableplatform.png"), PLATFORM_SIZE)
+PLATFORM_BASE_IMAGE = pygame.transform.scale(pygame.image.load("images/baseplatform.png"), PLATFORM_SIZE)
+PLATFORM_BREAKABLE_IMAGE = pygame.transform.scale(pygame.image.load("images/breakableplatform.png"), PLATFORM_SIZE)
+PLATFORM_MOVEABLE_IMGAGE = pygame.transform.scale(pygame.image.load("images/moveplatform.png"), PLATFORM_SIZE)
+
 TRAMP_SIZE = (45, 20)
 SPRING_SIZE = (20, 17)
 
-PLATFORM_SPRING_IMAGE = pygame.transform.scale(pygame.image.load("../oldgame/images/spring.png"), SPRING_SIZE)
-PLATFORM_SPRING_OPEN_IMAGE = pygame.image.load("../oldgame/images/spring opend.png")
-PLATFORM_TRAMP_IMAGE = pygame.transform.scale(pygame.image.load("../oldgame/images/trampolin.png"), TRAMP_SIZE)
-PLATFORM_DISTANCE_GAP = (40, 150)
-MAX_PLATFORM_NUMBER = 30
+PLATFORM_SPRING_IMAGE = pygame.transform.scale(pygame.image.load("images/spring.png"), SPRING_SIZE)
+PLATFORM_SPRING_OPEN_IMAGE = pygame.image.load("images/spring opend.png")
+PLATFORM_TRAMP_IMAGE = pygame.transform.scale(pygame.image.load("images/trampolin.png"), TRAMP_SIZE)
+PLATFORM_DISTANCE_GAP = (30, 120)
+MAX_PLATFORM_NUMBER = 35
 SPRING_SPAWN_CHANCE = 30
 TRAMP_SPAWN_CHANCE = 30
-BREAKABLE_PLATFORM_CHANCE = 20
-MOVEABLE_PLATFORM_CHANCE = 30
+BREAKABLE_PLATFORM_CHANCE = 15
+MOVEABLE_PLATFORM_CHANCE = 20
 
 SPRING_IMAGES = (PLATFORM_SPRING_IMAGE,PLATFORM_SPRING_OPEN_IMAGE)
 TRAMP_IMAGES = (PLATFORM_TRAMP_IMAGE,PLATFORM_TRAMP_IMAGE )

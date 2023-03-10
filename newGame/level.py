@@ -83,14 +83,14 @@ class Trampolin(sprite.Sprite):
             surface.blit(self.image, self.rect)
 
 
-class Platform(sprite.Sprite):
+class Platform(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y,
                  initial_spring=False, initial_tramp=False, breakable=False, moveable=False):
         super().__init__()
         if breakable:
             self.image = config.PLATFORM_BREAKABLE_IMAGE
         elif moveable:
-            self.image = config.PLATFORM_BASE_IMAGE
+            self.image = config.PLATFORM_MOVEABLE_IMGAGE
         else:
             self.image = config.PLATFORM_BASE_IMAGE
 
@@ -143,7 +143,11 @@ class Platform(sprite.Sprite):
             self.__level.remove_platform(self)
 
     def draw(self, surface: Surface) -> None:
-        surface.blit(self.image, self.rect)
+        if Camera.instance:
+            self.camera_rect = Camera.instance.apply(self)
+            surface.blit(self.image, self.camera_rect)
+        else:
+            surface.blit(self.image, self.rect)
         if self.__bonus:
             self.__bonus.draw(surface)
         if self.camera_rect.y + self.rect.height > config.YWIN:
@@ -229,7 +233,6 @@ class Level(Singleton, pygame.sprite.Group):
 
     def update(self) -> None:
         " Should be called each frame in main game loop for generation."
-        super().update()
         for platform in self.__platforms:
             self.add(platform)
         for platform in self.__to_remove:
@@ -245,3 +248,5 @@ class Level(Singleton, pygame.sprite.Group):
         """
         for platform in self.__platforms:
             platform.draw(surface)
+            pygame.draw.rect(surface, pygame.Color("red"), platform.rect, 2)
+
