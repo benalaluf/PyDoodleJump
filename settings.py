@@ -39,7 +39,7 @@ GRAVITY = .45
 
 # Platforms
 PLATFORM_COLOR = FOREST_GREEN
-PLATFORM_SIZE = (85, 23)
+PLATFORM_SIZE = (80, 20)
 PLATFORM_COLOR_LIGHT = LIGHT_GREEN
 PLATFORM_BASE_IMAGE = pygame.transform.scale(pygame.image.load("images/baseplatform.png"), PLATFORM_SIZE)
 PLATFORM_BREAKABLE_IMAGE = pygame.transform.scale(pygame.image.load("images/breakableplatform.png"), PLATFORM_SIZE)

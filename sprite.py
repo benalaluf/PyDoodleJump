@@ -5,7 +5,7 @@ from pygame.surface import Surface
 from camera import Camera
 
 
-class Sprite:
+class Sprite():
 
     # default constructor (must be called if overrided by inheritance)
     def __init__(self, x: int, y: int, w: int, h: int, image: pygame.image):

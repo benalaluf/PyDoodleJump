@@ -71,7 +71,7 @@ class Platform(Sprite):
         image = config.PLATFORM_BASE_IMAGE
         if breakable: image = config.PLATFORM_BREAKABLE_IMAGE
         super().__init__(x, y, width, height, image)
-
+        
         self.breakable = breakable
         self.__level = Level.instance
         self.__bonus = None

@@ -92,8 +92,9 @@ class Player(Sprite, Singleton):
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = pygame.mouse.get_pos()
             # print(x,y)
+            print(self.rect.x, self.rect.y)
             self.bullets.append(
-             Player.Bullet(self.rect.centerx - 10, self.rect.y, config.BULLET_SIZE[0], config.BULLET_SIZE[1],
+             Player.Bullet(self.rect.centerx, self.rect.y, config.BULLET_SIZE[0], config.BULLET_SIZE[1],
                               config.BULLET_IMAGE, config.BULLET_SPEED, x, y)
             )
 
@@ -123,7 +124,7 @@ class Player(Sprite, Singleton):
                 # check collisions with platform
                 if collide_rect(self, platform):
                     if platform.breakable:
-                        self.onCollideNoJump(platform)
+                        pass
                     else:
                         self.onCollide(platform)
                     platform.onCollide()
@@ -184,11 +185,10 @@ class Player(Sprite, Singleton):
             # self.x and self.y are floats (decimals) so I get more accuracy
             # if I change self.x and y and then convert to an integer for
             # the rectangle.
-            self.update(self.dx, self.dy)
             self.x = self.x + self.dx
             self.y = self.y + self.dy
-            self.rect.x = int(self.x)
-            self.rect.y = int(self.y)
+            self.rect.x = self.x
+            self.rect.y = self.y
 
         # Override
         def draw(self, surface: pygame.Surface) -> None:
