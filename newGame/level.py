@@ -26,7 +26,7 @@ class Spring(sprite.Sprite):
 
     def get_inital_pos(self):
         x = randint(self.parent.rect.left + 20, self.parent.rect.right - 20)
-        y = self.parent.rect.y - config.SPRING_SIZE[1]
+        y = self.parent.rect.y + 3
         return x, y
 
     def onCollide(self):
@@ -60,12 +60,12 @@ class Trampolin(sprite.Sprite):
         self.image = self.images[0]
         self.rect = self.image.get_rect()
         self.parent = parent
-        self.rect.midbottom = self.get_inital_pos()
+        self.rect.topleft = self.get_inital_pos()
         self.force = force
 
     def get_inital_pos(self):
         x = self.parent.rect.centerx - Trampolin.WIDTH // 2
-        y = self.parent.rect.y - Trampolin.HEIGHT
+        y = self.parent.rect.y - Trampolin.HEIGHT + 3
         return x, y
 
     def onCollide(self):
@@ -87,23 +87,29 @@ class Platform(sprite.Sprite):
     def __init__(self, pos_x, pos_y,
                  initial_spring=False, initial_tramp=False, breakable=False, moveable=False):
         super().__init__()
-        if moveable:
-            self.image = config.PLATFORM_BASE_IMAGE
-        elif breakable:
+        if breakable:
             self.image = config.PLATFORM_BREAKABLE_IMAGE
+        elif moveable:
+            self.image = config.PLATFORM_BASE_IMAGE
         else:
             self.image = config.PLATFORM_BASE_IMAGE
 
         self.rect = self.image.get_rect()
-        self.rect.center = [pos_x, pos_y]
+        self.min_x = 0
+        self.max_x = 0
+        if moveable:
+            pos_x = randint(0, (config.XWIN - config.PLATFORM_SIZE[0] - 200))
+            self.min_x = pos_x
+            self.max_x = randint(self.min_x + 200, config.XWIN)
+            self.rect.topleft = [pos_x, pos_y]
+        else:
+            self.rect.topleft = [pos_x, pos_y]
         self.__level = Level.instance
         self.breakable = breakable
         self.moveable = moveable
         self.camera_rect = self.rect.copy()
         self.__bonus = None
         self.__type = None
-        self.min_x = randint(0, pos_x)
-        self.max_x = randint(self.min_x, config.XWIN)
         self.speed = 2
         if initial_spring:
             self.add_bonus(Spring)
@@ -120,8 +126,9 @@ class Platform(sprite.Sprite):
             self.speed *= -1
         if self.rect.left < self.min_x:
             self.speed *= -1
-
         self.rect.x += self.speed
+        if self.__bonus is not None:
+            self.__bonus.rect.x += self.speed
 
     def add_bonus(self, bonus_type: type) -> None:
         assert issubclass(bonus_type, (Spring, Trampolin)), "Not a valid bonus type !"
@@ -174,8 +181,7 @@ class Level(Singleton, pygame.sprite.Group):
 
         self.__base_platform = Platform(
             config.HALF_XWIN - self.platform_size[0] // 2,  # X POS
-            config.HALF_YWIN + config.YWIN / 3,  # Y POS
-            *self.platform_size)  # SIZE
+            config.HALF_YWIN + config.YWIN / 3)
 
     # Public getter for __platforms so it remains private
     @property

@@ -72,7 +72,7 @@ class Game(Singleton):
 
     def _render_loop(self):
         # ----------- Display -----------
-        bg = pygame.transform.scale(pygame.image.load("../images/bck.png"), (config.HALF_XWIN * 2, config.HALF_YWIN * 2))
+        bg = pygame.transform.scale(pygame.image.load("images/bck.png"), (config.HALF_XWIN * 2, config.HALF_YWIN * 2))
         self.window.blit(bg,(0,0))
         self.lvl.draw(self.window)
         self.player.draw(self.window)
