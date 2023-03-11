@@ -5,6 +5,7 @@ import pygame.sprite
 from pygame import *
 from pygame.event import Event
 import settings as config
+from newGame.camera import Camera
 from newGame.level import Level
 
 getsign = lambda x: copysign(1, x)
@@ -115,12 +116,12 @@ class Player(pygame.sprite.Sprite):
 
                 # check collisions with platform
                 if self.rect.colliderect(platform.rect):
-                    #if abs(platform.rect.top - self.rect.bottom) < 4:
-                        if platform.breakable:
-                            pass
-                        else:
-                            self.onCollide(platform)
-                        platform.onCollide()
+                     if abs(platform.rect.top - self.rect.bottom) < 30:
+                         if platform.breakable:
+                             pass
+                         else:
+                             self.onCollide(platform)
+                         platform.onCollide()
 
     def update(self) -> None:
         if self.camera_rect.y > config.YWIN * 2:
@@ -157,8 +158,19 @@ class Player(pygame.sprite.Sprite):
             return True
         return False
 
-    def draw(self, surface: pygame.Surface) -> None:
-        surface.blit(self.image, self.rect)
+    def draw(self, surface: Surface) -> None:
+        """ Render method,Should be called every frame after update.
+        :param surface pygame.Surface: the surface to draw on.
+        """
+        # If camera instancied: calculate render positon
+        if Camera.instance:
+            self.camera_rect = Camera.instance.apply(self)
+            surface.blit(self.image, self.camera_rect)
+            pygame.draw.rect(surface, pygame.Color("blue"), self.camera_rect, 2)
+
+        else:
+            surface.blit(self.image, self.rect)
+            pygame.draw.rect(surface, pygame.Color("red"), self.rect, 2)
         for bullet in self.bullets:
             bullet.draw(surface)
 

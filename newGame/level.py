@@ -33,15 +33,8 @@ class Spring(sprite.Sprite):
         self.image = self.images[1]
 
     def draw(self, surface: Surface) -> None:
-        """ Render method,Should be called every frame after update.
-        :param surface pygame.Surface: the surface to draw on.
-        """
-        # If camera instancied: calculate render positon
-        if Camera.instance:
-            self.camera_rect = Camera.instance.apply(self)
-            surface.blit(self.image, self.camera_rect)
-        else:
-            surface.blit(self.image, self.rect)
+        self.camera_rect = Camera.instance.apply(self)
+        surface.blit(self.image, self.camera_rect)
 
 
 class Trampolin(sprite.Sprite):
@@ -76,11 +69,8 @@ class Trampolin(sprite.Sprite):
         :param surface pygame.Surface: the surface to draw on.
         """
         # If camera instancied: calculate render positon
-        if Camera.instance:
-            self.camera_rect = Camera.instance.apply(self)
-            surface.blit(self.image, self.camera_rect)
-        else:
-            surface.blit(self.image, self.rect)
+        self.camera_rect = Camera.instance.apply(self)
+        surface.blit(self.image, self.camera_rect)
 
 
 class Platform(pygame.sprite.Sprite):
@@ -107,10 +97,9 @@ class Platform(pygame.sprite.Sprite):
         self.__level = Level.instance
         self.breakable = breakable
         self.moveable = moveable
-        self.camera_rect = self.rect.copy()
         self.__bonus = None
         self.__type = None
-        self.speed = 2
+        self.speed = 3
         if initial_spring:
             self.add_bonus(Spring)
         if initial_tramp:
@@ -146,8 +135,12 @@ class Platform(pygame.sprite.Sprite):
         if Camera.instance:
             self.camera_rect = Camera.instance.apply(self)
             surface.blit(self.image, self.camera_rect)
+            pygame.draw.rect(surface, pygame.Color("blue"), self.camera_rect, 2)
+
         else:
             surface.blit(self.image, self.rect)
+            pygame.draw.rect(surface, pygame.Color("red"), self.rect, 2)
+
         if self.__bonus:
             self.__bonus.draw(surface)
         if self.camera_rect.y + self.rect.height > config.YWIN:
@@ -235,6 +228,7 @@ class Level(Singleton, pygame.sprite.Group):
         " Should be called each frame in main game loop for generation."
         for platform in self.__platforms:
             self.add(platform)
+            platform.update()
         for platform in self.__to_remove:
             if platform in self.__platforms:
                 self.__platforms.remove(platform)
@@ -248,5 +242,3 @@ class Level(Singleton, pygame.sprite.Group):
         """
         for platform in self.__platforms:
             platform.draw(surface)
-            pygame.draw.rect(surface, pygame.Color("red"), platform.rect, 2)
-

@@ -1,3 +1,4 @@
+import pygame
 from pygame import Rect
 from pygame.sprite import Sprite
 
@@ -24,7 +25,7 @@ class Camera(Singleton):
         """
         return rect.move((0, -self.state.topleft[1]))
 
-    def apply(self, target: Sprite) -> Rect:
+    def apply(self, target: pygame.sprite.Sprite) -> Rect:
         """ Returns new target render position based on current camera position.
         :param target Sprite: a sprite that wants to get its render position.
         """

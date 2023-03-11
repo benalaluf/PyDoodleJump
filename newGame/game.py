@@ -21,8 +21,6 @@ camera = Camera()
 
 # Player
 player = Player()
-player_group = pygame.sprite.Group()
-player_group.add(player)
 
 # Platfor
 platform_group = Level()
@@ -47,12 +45,11 @@ while True:
             if event.key == pygame.K_RETURN:
                 reset()
         player.handle_event(event)
-    pygame.draw.rect(screen, pygame.Color("red"), player.rect, 2)
     screen.blit(background, (0, 0))
     camera.update(player.rect)
     platform_group.draw(screen)
     platform_group.update()
-    player_group.draw(screen)
-    player_group.update()
+    player.draw(screen)
+    player.update()
     pygame.display.flip()
     clock.tick(60)
