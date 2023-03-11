@@ -4,52 +4,100 @@ import pygame, sys
 
 # General SetUp
 from newGame.camera import Camera
-from newGame.level import Platform, Level
+from newGame.level import Level
 from newGame.player import Player
+import settings as config
+from newGame.singleton import Singleton
 
-pygame.init()
-clock = pygame.time.Clock()
+class Game(Singleton):
+    def __init__(self):
+        self.__alive = True
+        # Game Screen
+        screen_width = 640
+        screen_height = 1024
+        self.screen = pygame.display.set_mode((screen_width, screen_height))
+        self.clock = pygame.time.Clock()
 
-# Game Screen
-screen_width = 640
-screen_height = 1024
-screen = pygame.display.set_mode((screen_width, screen_height))
-background = pygame.image.load('images/background.png')
+        # Camera
+        self.camera = Camera()
 
-# Camera
-camera = Camera()
-
-# Player
-player = Player()
-
-# Platfor
-platform_group = Level()
-
-
-def reset():
-    print('rest')
-    camera.reset()
-    platform_group.reset()
-    player.reset()
+        # Player
+        self.player = Player()
+        self.dead_sound = pygame.mixer.Sound('sounds/pada.mp3')
+        self.dead_flag = False
 
 
-# Game Loop
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            player.shoot()
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN:
-                reset()
-        player.handle_event(event)
-    screen.blit(background, (0, 0))
-    camera.update(player.rect)
-    platform_group.draw(screen)
-    platform_group.update()
-    player.draw(screen)
-    player.update()
-    pygame.display.flip()
-    clock.tick(60)
+        # Platfor
+        self.level = Level()
+        # User Interface
+        self.score = 0
+        self.score_txt = config.SMALL_FONT.render("0 m", 1, config.GRAY)
+        self.score_pos = pygame.math.Vector2(10, 10)
+
+        self.gameover_txt = config.LARGE_FONT.render("Game Over", 1, config.GRAY)
+        self.gobacktomenu_txt = config.SMALL_FONT.render("Press Enter To Menu", 1, config.GRAY)
+        self.gameover_rect = self.gameover_txt.get_rect(
+            center=(config.HALF_XWIN, config.HALF_YWIN))
+        self.gobacktomenu_rect = self.gameover_txt.get_rect()
+        self.gobacktomenu_rect.center = [config.HALF_XWIN+5, config.HALF_YWIN+70]
+
+    def choose_theme(self,theme):
+        self.theme = theme
+
+    def close(self):
+        self.__alive = False
+
+    def reset(self):
+        self.__alive = True
+        self.camera.reset()
+        self.level.reset()
+        self.player.reset()
+        self.dead_flag = False
+
+
+    def event_loop(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.close()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.close()
+                if event.key == pygame.K_RETURN and self.player.dead:
+                    self.close()
+            self.player.handle_event(event)
+        if self.player.dead and not self.dead_flag:
+            self.dead_sound.play()
+            self.dead_flag = True
+
+    def render_loop(self):
+        self.screen.blit(config.BACKGROUND, (0, 0))
+        self.level.draw(self.screen)
+        self.player.draw(self.screen)
+        # for b in self.player.bullets:
+        #     pygame.draw.rect(self.screen, pygame.Color("red"), b.rect, 2)
+        if self.player.dead:
+            self.screen.blit(self.gameover_txt, self.gameover_rect)  # gameover txt
+            self.screen.blit(self.gobacktomenu_txt, self.gobacktomenu_rect)  # gameover txt
+
+
+        self.screen.blit(self.score_txt, self.score_pos)  # score txt
+        pygame.display.flip()
+        self.clock.tick(60)
+
+    def update_loop(self):
+        self.level.update()
+        self.player.update()
+        if not self.player.dead:
+            self.camera.update(self.player.rect)
+            # calculate score and update UI txt
+            self.score = -self.camera.state.y // 50
+            self.score_txt = config.SMALL_FONT.render(
+                str(self.score) + " m", 1, config.GRAY)
+        config.loadTheme()
+
+    def run(self):
+        # ============= MAIN GAME LOOP =============
+        while self.__alive:
+            self.event_loop()
+            self.update_loop()
+            self.render_loop()

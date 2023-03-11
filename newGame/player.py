@@ -5,16 +5,18 @@ from pygame import *
 from pygame.event import Event
 import settings as config
 from newGame.camera import Camera
-from newGame.level import Level
+from newGame.level import Level, Platform, Monstor
 import math as math
+
+from newGame.singleton import Singleton
 
 getsign = lambda x: copysign(1, x)
 
 
-class Player(pygame.sprite.Sprite):
+class Player(pygame.sprite.Sprite, Singleton):
     def __init__(self):
         super().__init__()
-        self.image = config.PLAYER_IMAGE_RIGHT
+        self.image =config.PLAYER_IMAGE_RIGHT
         self.rect = self.image.get_rect()
         self.rect.topleft = [config.HALF_XWIN - config.PLAYER_SIZE[0] / 2,  # X POS
                              config.HALF_YWIN + config.HALF_YWIN / 2]
@@ -39,6 +41,7 @@ class Player(pygame.sprite.Sprite):
 
         self.camera_rect = self.rect.copy()
 
+        self.bulletGroup = pygame.sprite.Group()
         self.bullets = []
         self.__to_remove = []
         self.time = False
@@ -48,9 +51,10 @@ class Player(pygame.sprite.Sprite):
         self.gunshoot_sound.play()
         if x is None or y is None:
             x, y = pygame.mouse.get_pos()
-        print(self.rect.x, self.rect.y)
+        b = Player.Bullet(x, y, self.camera_rect.centerx, self.camera_rect.y)
+        self.bulletGroup.add(b)
         self.bullets.append(
-            Bullet(x, y, self.camera_rect.centerx, self.camera_rect.y)
+            b
         )
 
     def _fix_velocity(self) -> None:
@@ -96,6 +100,8 @@ class Player(pygame.sprite.Sprite):
                     self.image = config.PLAYER_IMAGE_RIGHT
                 elif self.lastkeypressed[len(self.lastkeypressed) - 1] == 'a':
                     self.image = config.PLAYER_IMAGE_LEFT
+        if event.type == MOUSEBUTTONDOWN:
+            self.shoot()
 
     def jump(self, force: float = None) -> None:
         self.oriention[1] = True
@@ -110,28 +116,46 @@ class Player(pygame.sprite.Sprite):
     def collisions(self) -> None:
         lvl = Level.instance
         if not lvl: return
-        for platform in lvl.platforms:
-            # check falling and colliding <=> isGrounded ?
-            if self._velocity.y > .5:
-                # check collisions with platform's spring bonus
-                if platform.bonus and self.rect.colliderect(platform.bonus.rect):
-                    platform.bonus.onCollide()
-                    self.onCollide(platform.bonus)
-                    self.jump(platform.bonus.force)
-
-                # check collisions with platform
-                if self.rect.colliderect(platform.rect):
-                    if abs(platform.rect.top - self.rect.bottom) < 30:
-                        if platform.breakable:
-                            pass
+        if not self.dead:
+            for platform in lvl.platforms:
+                # check falling and colliding <=> isGrounded ?
+                if self._velocity.y > .5:
+                    # check collisions with platform's spring bonus
+                    if platform.bonus and self.rect.colliderect(platform.bonus.rect):
+                        if platform.bonus.__class__ == Monstor:
+                            self.dead = True
                         else:
-                            self.onCollide(platform)
-                        platform.onCollide()
+                            platform.bonus.onCollide()
+                            self.onCollide(platform.bonus)
+                            self.jump(platform.bonus.force)
+
+                    # check collisions with platform
+                    if self.rect.colliderect(platform.rect):
+                        if abs(platform.rect.top - self.rect.bottom) < 30:
+                            if platform.breakable:
+                                pass
+                            else:
+                                self.onCollide(platform)
+                            platform.onCollide()
+                if platform.bonus.__class__ == Monstor:
+                   for b in self.bullets:
+                       if b.rect.colliderect(platform.bonus.rect):
+                           platform.remove_bonus()
+
+
+    def update_collisoins(self, plat: Platform):
+        if self.rect.colliderect(plat.rect):
+            if abs(plat.rect.top - self.rect.bottom) < 30:
+                if plat.breakable:
+                    pass
+                else:
+                    self.onCollide(plat)
+                plat.onCollide()
 
     def update_oriention(self):
         if self.oriention[0]:
             if self.oriention[1]:
-                self.image = config.PLAYER_IMAGE_JUMP_RIGHT
+                self.image = config.PLAYER_IMAGE_RIGHT
             else:
                 self.image = config.PLAYER_IMAGE_RIGHT
         else:
@@ -166,7 +190,6 @@ class Player(pygame.sprite.Sprite):
             if bullet in self.bullets:
                 self.bullets.remove(bullet)
         self.__to_remove = []
-
         self.collisions()
 
     def remove_bullet(self, blt) -> bool:
@@ -196,31 +219,38 @@ class Player(pygame.sprite.Sprite):
             bullet.draw(surface)
 
 
-class Bullet(pygame.sprite.Sprite):
-    def __init__(self, targetx, targety, pos_x, pos_y):
-        super().__init__()
-        self.image = config.BULLET_IMAGE
-        self.rect = self.image.get_rect()
-        angle = math.atan2(targety - pos_y, targetx - pos_x)  # get angle to target in radians
-        # print('Angle in degrees:', int(angle * 180 / math.pi))
-        self.speed = 30
-        self.dx = math.cos(angle) * self.speed
-        self.dy = math.sin(angle) * self.speed
-        self.pos_x = pos_x
-        self.pos_y = pos_y
-        self.camera_rect = self.rect.copy()
+    class Bullet(pygame.sprite.Sprite):
+        def __init__(self, targetx, targety, pos_x, pos_y):
+            super().__init__()
+            self.image = config.BULLET_IMAGE
+            self.rect = self.image.get_rect()
+            angle = math.atan2(targety - pos_y, targetx - pos_x)  # get angle to target in radians
+            # print('Angle in degrees:', int(angle * 180 / math.pi))
+            self.speed = 20
+            self.dx = math.cos(angle) * self.speed
+            self.dy = math.sin(angle) * self.speed
+            self.pos_x = pos_x
+            self.pos_y = pos_y
 
-    def move(self):
-        # self.x and self.y are floats (decimals) so I get more accuracy
-        # if I change self.x and y and then convert to an integer for
-        # the rectangle.
-        self.pos_x = self.pos_x + self.dx
-        self.pos_y = self.pos_y + self.dy
-        self.rect.x = self.pos_x
-        self.rect.y = self.pos_y
+        def move(self):
+            # self.x and self.y are floats (decimals) so I get more accuracy
+            # if I change self.x and y and then convert to an integer for
+            # the rectangle.
+            self.pos_x = self.pos_x + self.dx
+            self.pos_y = self.pos_y + self.dy
+            self.rect.x = self.pos_x
+            self.rect.y = self.pos_y
 
-    # Override
-    def draw(self, surface: pygame.Surface) -> None:
-        surface.blit(self.image, self.rect)
-        if self.camera_rect.y + self.rect.height > config.YWIN:
-            Player.instance.remove_bullet(self)
+        def checkCoolistoin(self, other_rect: Rect):
+            return self.rect.colliderect(other_rect)
+
+        def draw(self, surface: pygame.Surface) -> None:
+            surface.blit(self.image, self.rect)
+            if self.rect.x > config.XWIN or self.rect.x < 0:
+                Player.instance.remove_bullet(self)
+                Player.instance.bulletGroup.remove(self)
+            if (Player.instance.rect.y - config.YWIN) > self.rect.y:
+                Player.instance.remove_bullet(self)
+                Player.instance.bulletGroup.remove(self)
+
+

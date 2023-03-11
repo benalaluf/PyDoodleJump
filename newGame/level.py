@@ -25,7 +25,6 @@ class Spring(sprite.Sprite):
         self.force = force
         self.jump_sound = pygame.mixer.Sound('sounds/feder.mp3')
 
-
     def get_inital_pos(self):
         x = randint(self.parent.rect.left + 20, self.parent.rect.right - 20)
         y = self.parent.rect.y + 3
@@ -34,7 +33,7 @@ class Spring(sprite.Sprite):
     def onCollide(self):
         self.jump_sound.play()
         self.image = self.images[1]
-        self.camera_rect = [self.camera_rect.x, self.camera_rect.y-10]
+        self.camera_rect = [self.camera_rect.x, self.camera_rect.y - 10]
 
     def draw(self, surface: Surface) -> None:
         self.camera_rect = Camera.instance.apply(self)
@@ -61,7 +60,6 @@ class Trampolin(sprite.Sprite):
         self.force = force
         self.jump_sound = pygame.mixer.Sound('sounds/tramp.mp3')
 
-
     def get_inital_pos(self):
         x = self.parent.rect.centerx - Trampolin.WIDTH // 2
         y = self.parent.rect.y - Trampolin.HEIGHT + 3
@@ -81,7 +79,7 @@ class Trampolin(sprite.Sprite):
 
 class Platform(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y,
-                 initial_spring=False, initial_tramp=False, breakable=False, moveable=False):
+                 initial_spring=False, initial_tramp=False, breakable=False, moveable=False, monster=False):
         super().__init__()
         if breakable:
             self.image = config.PLATFORM_BREAKABLE_IMAGE
@@ -112,12 +110,21 @@ class Platform(pygame.sprite.Sprite):
             self.add_bonus(Spring)
         if initial_tramp:
             self.add_bonus(Trampolin)
+        if monster:
+            self.add_bonus(Monstor)
 
     @property
     def bonus(self):
         return self.__bonus
 
     def move(self):
+
+        if self.breakable:
+            self.image = config.PLATFORM_BREAKABLE_IMAGE
+        elif self.moveable:
+            self.image = config.PLATFORM_MOVEABLE_IMGAGE
+        else:
+            self.image = config.PLATFORM_BASE_IMAGE
 
         if self.rect.right > self.max_x:
             self.speed *= -1
@@ -128,7 +135,7 @@ class Platform(pygame.sprite.Sprite):
             self.__bonus.rect.x += self.speed
 
     def add_bonus(self, bonus_type: type) -> None:
-        assert issubclass(bonus_type, (Spring, Trampolin)), "Not a valid bonus type !"
+        assert issubclass(bonus_type, (Spring, Trampolin, Monstor)), "Not a valid bonus type !"
         if not self.__bonus and not self.breakable:
             self.__bonus = bonus_type(self)
 
@@ -143,14 +150,15 @@ class Platform(pygame.sprite.Sprite):
             self.__level.remove_platform(self)
 
     def draw(self, surface: Surface) -> None:
+
         if Camera.instance:
             self.camera_rect = Camera.instance.apply(self)
             surface.blit(self.image, self.camera_rect)
-          #  pygame.draw.rect(surface, pygame.Color("blue"), self.camera_rect, 2)
+        #  pygame.draw.rect(surface, pygame.Color("blue"), self.camera_rect, 2)
 
         else:
             surface.blit(self.image, self.rect)
-           # pygame.draw.rect(surface, pygame.Color("red"), self.rect, 2)
+        # pygame.draw.rect(surface, pygame.Color("red"), self.rect, 2)
 
         if self.__bonus:
             self.__bonus.draw(surface)
@@ -160,6 +168,38 @@ class Platform(pygame.sprite.Sprite):
     def update(self):
         if self.moveable:
             self.move()
+
+
+class Monstor(sprite.Sprite):
+
+    def __init__(self, parent: sprite.Sprite):
+        super().__init__()
+        self.images = config.SPRING_IMAGES
+        self.image = config.MONSTER_IMAGE
+        self.rect = self.image.get_rect()
+        self.parent = parent
+        self.rect.midbottom = self.get_inital_pos()
+        self.mostor_sound = pygame.mixer.Sound('sounds/feder.mp3')
+        self.health = randint(1, 3)
+
+    def mostor_noise(self):
+        self.mostor_sound.play()
+
+    def get_inital_pos(self):
+        x = self.parent.rect.centerx
+        y = self.parent.rect.y
+        return x, y
+
+    def checkCollide(self, b:pygame.sprite.Group):
+        return pygame.sprite.spritecollideany(self,b)
+
+
+    def onCollide(self):
+        pass
+
+    def draw(self, surface: Surface) -> None:
+        self.camera_rect = Camera.instance.apply(self)
+        surface.blit(self.image, self.camera_rect)
 
 
 class Level(Singleton, pygame.sprite.Group):
@@ -183,6 +223,7 @@ class Level(Singleton, pygame.sprite.Group):
         self.tramp_platform_chance = config.TRAMP_SPAWN_CHANCE
         self.breakable_platform_chance = config.BREAKABLE_PLATFORM_CHANCE
         self.moveable_platform_chance = config.MOVEABLE_PLATFORM_CHANCE
+        self.monster_chance = 100
 
         self.__platforms = []
         self.__to_remove = []
