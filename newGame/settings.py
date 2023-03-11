@@ -73,13 +73,15 @@ def loadTheme():
     global BACKGROUND, PLAYER_IMAGE_RIGHT, PLAYER_IMAGE_JUMP_RIGHT, PLAYER_IMAGE_LEFT, PLAYER_IMAGE_JUMP_LEFT
     global MONSTER_IMAGE, PLAYER_IMAGE_SHOOT, BULLET_IMAGE, PLATFORM_BASE_IMAGE, PLATFORM_BREAKABLE_IMAGE
     global PLATFORM_MOVEABLE_IMGAGE, PLATFORM_SPRING_IMAGE, PLATFORM_SPRING_OPEN_IMAGE, PLATFORM_TRAMP_IMAGE
-    BACKGROUND = pygame.image.load(f'images/{theme}/background.png')
+    BACKGROUND = pygame.transform.scale(pygame.image.load(f'images/{theme}/background.png'), (XWIN,YWIN))
     PLAYER_IMAGE_RIGHT = pygame.transform.scale(pygame.image.load(f"images/{theme}/doodle_r.png"), PLAYER_SIZE)
     PLAYER_IMAGE_JUMP_RIGHT = pygame.transform.scale(pygame.image.load(f"images/{theme}/doodle_jump.png"), PLAYER_SIZE)
     PLAYER_IMAGE_LEFT = pygame.transform.flip(PLAYER_IMAGE_RIGHT, True, False)
     PLAYER_IMAGE_JUMP_LEFT = pygame.transform.flip(PLAYER_IMAGE_JUMP_RIGHT, True, False)
     MONSTER_IMAGE = pygame.image.load('images/monster.png')
     PLAYER_IMAGE_SHOOT = pygame.transform.scale(pygame.image.load(f"images/shoot_player.png"), (40, 80))
+    if theme == 'b':
+        BULLET_IMAGE = pygame.transform.scale(pygame.image.load(f"images/{theme}/bullet.png"), (20,30))
     BULLET_IMAGE = pygame.transform.scale(pygame.image.load(f"images/{theme}/bullet.png"), BULLET_SIZE)
     PLATFORM_BASE_IMAGE = pygame.transform.scale(pygame.image.load(f"images/{theme}/baseplatform.png"), PLATFORM_SIZE)
     PLATFORM_BREAKABLE_IMAGE = pygame.transform.scale(pygame.image.load(f"images/{theme}/breakableplatform.png"),

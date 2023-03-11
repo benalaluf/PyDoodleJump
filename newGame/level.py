@@ -223,7 +223,7 @@ class Level(Singleton, pygame.sprite.Group):
         self.tramp_platform_chance = config.TRAMP_SPAWN_CHANCE
         self.breakable_platform_chance = config.BREAKABLE_PLATFORM_CHANCE
         self.moveable_platform_chance = config.MOVEABLE_PLATFORM_CHANCE
-        self.monster_chance = 100
+        self.monster_chance = 40
 
         self.__platforms = []
         self.__to_remove = []
@@ -257,7 +257,9 @@ class Level(Singleton, pygame.sprite.Group):
                 initial_spring=chance(self.spring_platform_chance),
                 initial_tramp=chance(self.tramp_platform_chance),
                 breakable=chance(self.breakable_platform_chance),
-                moveable=chance(self.moveable_platform_chance)))
+                moveable=chance(self.moveable_platform_chance),
+                monster=chance(self.monster_chance)
+            ))
         else:
             # (just in case) no platform: add the base one
             self.__platforms.append(self.__base_platform)
