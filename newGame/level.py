@@ -23,6 +23,8 @@ class Spring(sprite.Sprite):
         self.parent = parent
         self.rect.midbottom = self.get_inital_pos()
         self.force = force
+        self.jump_sound = pygame.mixer.Sound('sounds/feder.mp3')
+
 
     def get_inital_pos(self):
         x = randint(self.parent.rect.left + 20, self.parent.rect.right - 20)
@@ -30,7 +32,9 @@ class Spring(sprite.Sprite):
         return x, y
 
     def onCollide(self):
+        self.jump_sound.play()
         self.image = self.images[1]
+        self.camera_rect = [self.camera_rect.x, self.camera_rect.y-10]
 
     def draw(self, surface: Surface) -> None:
         self.camera_rect = Camera.instance.apply(self)
@@ -55,6 +59,8 @@ class Trampolin(sprite.Sprite):
         self.parent = parent
         self.rect.topleft = self.get_inital_pos()
         self.force = force
+        self.jump_sound = pygame.mixer.Sound('sounds/tramp.mp3')
+
 
     def get_inital_pos(self):
         x = self.parent.rect.centerx - Trampolin.WIDTH // 2
@@ -62,7 +68,7 @@ class Trampolin(sprite.Sprite):
         return x, y
 
     def onCollide(self):
-        pass
+        self.jump_sound.play()
 
     def draw(self, surface: Surface) -> None:
         """ Render method,Should be called every frame after update.
@@ -100,6 +106,8 @@ class Platform(pygame.sprite.Sprite):
         self.__bonus = None
         self.__type = None
         self.speed = 3
+        self.jump_sound = pygame.mixer.Sound('sounds/jump.wav')
+        self.break_sound = pygame.mixer.Sound('sounds/break.mp3')
         if initial_spring:
             self.add_bonus(Spring)
         if initial_tramp:
@@ -128,18 +136,21 @@ class Platform(pygame.sprite.Sprite):
         self.__bonus = None
 
     def onCollide(self) -> None:
+        if not self.breakable:
+            self.jump_sound.play()
         if self.breakable:
+            self.break_sound.play()
             self.__level.remove_platform(self)
 
     def draw(self, surface: Surface) -> None:
         if Camera.instance:
             self.camera_rect = Camera.instance.apply(self)
             surface.blit(self.image, self.camera_rect)
-            pygame.draw.rect(surface, pygame.Color("blue"), self.camera_rect, 2)
+          #  pygame.draw.rect(surface, pygame.Color("blue"), self.camera_rect, 2)
 
         else:
             surface.blit(self.image, self.rect)
-            pygame.draw.rect(surface, pygame.Color("red"), self.rect, 2)
+           # pygame.draw.rect(surface, pygame.Color("red"), self.rect, 2)
 
         if self.__bonus:
             self.__bonus.draw(surface)

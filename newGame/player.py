@@ -1,5 +1,4 @@
 from math import copysign
-import math
 
 import pygame.sprite
 from pygame import *
@@ -7,6 +6,7 @@ from pygame.event import Event
 import settings as config
 from newGame.camera import Camera
 from newGame.level import Level
+import math as math
 
 getsign = lambda x: copysign(1, x)
 
@@ -19,6 +19,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.topleft = [config.HALF_XWIN - config.PLAYER_SIZE[0] / 2,  # X POS
                              config.HALF_YWIN + config.HALF_YWIN / 2]
         self.gunshoot_sound = pygame.mixer.Sound('sounds/lasser.wav')
+        self.oriention = [True, False]
 
         self.__startrect = self.rect.copy()
         self.__maxvelocity = Vector2(config.PLAYER_MAX_SPEED, 100)
@@ -40,13 +41,16 @@ class Player(pygame.sprite.Sprite):
 
         self.bullets = []
         self.__to_remove = []
+        self.time = False
+        self.start_time = 0
 
-    def shoot(self):
+    def shoot(self, x=None, y=None):
         self.gunshoot_sound.play()
-        x, y = pygame.mouse.get_pos()
+        if x is None or y is None:
+            x, y = pygame.mouse.get_pos()
         print(self.rect.x, self.rect.y)
         self.bullets.append(
-            Player.Bullet(self.rect.centerx, self.rect.y, x, y)
+            Bullet(x, y, self.camera_rect.centerx, self.camera_rect.y)
         )
 
     def _fix_velocity(self) -> None:
@@ -68,20 +72,19 @@ class Player(pygame.sprite.Sprite):
             if event.key == K_LEFT or event.key == K_a:
                 self._velocity.x = -self.__startspeed
                 self._input = -1
-                self.image = (config.PLAYER_IMAGE_LEFT)
+                self.oriention[0] = False
                 self.lastkeypressed.append('a')
 
             elif event.key == K_RIGHT or event.key == K_d:
                 self._velocity.x = self.__startspeed
                 self._input = 1
-                self.image = (config.PLAYER_IMAGE_RIGHT)
+                self.oriention[0] = True
                 self.lastkeypressed.append('d')
 
             elif event.key == K_UP or event.key == K_w:
                 self.image = config.PLAYER_IMAGE_LEFT
                 self.lastkeypressed.append('w')
-                b = Player.Bullet(self.rect.centerx, self.rect.y, self.rect.centerx, self.rect.centery - 1000)
-                self.bullets.append(b)
+                self.shoot(x=self.camera_rect.centerx, y=self.camera_rect.y - 100)
 
         elif event.type == KEYUP:
             if (event.key == K_LEFT or event.key == K_a and self._input == -1) or (
@@ -95,10 +98,12 @@ class Player(pygame.sprite.Sprite):
                     self.image = config.PLAYER_IMAGE_LEFT
 
     def jump(self, force: float = None) -> None:
+        self.oriention[1] = True
         if not force: force = self._jumpforce
         self._velocity.y = -force
 
     def onCollide(self, other_rect) -> None:
+        self.start_time = pygame.time.get_ticks()
         self.rect.bottom = other_rect.rect.top
         self.jump()
 
@@ -116,12 +121,26 @@ class Player(pygame.sprite.Sprite):
 
                 # check collisions with platform
                 if self.rect.colliderect(platform.rect):
-                     if abs(platform.rect.top - self.rect.bottom) < 30:
-                         if platform.breakable:
-                             pass
-                         else:
-                             self.onCollide(platform)
-                         platform.onCollide()
+                    if abs(platform.rect.top - self.rect.bottom) < 30:
+                        if platform.breakable:
+                            pass
+                        else:
+                            self.onCollide(platform)
+                        platform.onCollide()
+
+    def update_oriention(self):
+        if self.oriention[0]:
+            if self.oriention[1]:
+                self.image = config.PLAYER_IMAGE_JUMP_RIGHT
+            else:
+                self.image = config.PLAYER_IMAGE_RIGHT
+        else:
+            if self.oriention[1]:
+                self.image = config.PLAYER_IMAGE_JUMP_LEFT
+            else:
+                self.image = config.PLAYER_IMAGE_LEFT
+        if pygame.time.get_ticks() - self.start_time > 400:
+            self.oriention[1] = False
 
     def update(self) -> None:
         if self.camera_rect.y > config.YWIN * 2:
@@ -138,13 +157,15 @@ class Player(pygame.sprite.Sprite):
         self.rect.x = (self.rect.x + self._velocity.x) % (config.XWIN - self.rect.width)
         self.rect.y += self._velocity.y
 
+        # orientaion
+        self.update_oriention()
+
+        for b in self.bullets:
+            b.move()
         for bullet in self.__to_remove:
             if bullet in self.bullets:
                 self.bullets.remove(bullet)
         self.__to_remove = []
-
-        for b in self.bullets:
-            b.move()
 
         self.collisions()
 
@@ -166,40 +187,40 @@ class Player(pygame.sprite.Sprite):
         if Camera.instance:
             self.camera_rect = Camera.instance.apply(self)
             surface.blit(self.image, self.camera_rect)
-            pygame.draw.rect(surface, pygame.Color("blue"), self.camera_rect, 2)
+        # pygame.draw.rect(surface, pygame.Color("blue"), self.camera_rect, 2)
 
         else:
             surface.blit(self.image, self.rect)
-            pygame.draw.rect(surface, pygame.Color("red"), self.rect, 2)
+        #   pygame.draw.rect(surface, pygame.Color("red"), self.rect, 2)
         for bullet in self.bullets:
             bullet.draw(surface)
 
-    class Bullet(pygame.sprite.Sprite):
-        def __init__(self, targetx, targety, pos_x, pos_y):
-            super().__init__()
-            self.image = pygame.image.load('images/doodle_r.png')
-            self.rect = self.image.get_rect()
-            angle = math.atan2(targety - pos_y, targetx - pos_x)  # get angle to target in radians
-            # print('Angle in degrees:', int(angle * 180 / math.pi))
-            self.speed = 1
-            self.dx = math.cos(angle) * self.speed
-            self.dy = math.sin(angle) * self.speed
-            self.pos_x = pos_x
-            self.pos_y = pos_y
-            self.camera_rect = self.rect.copy()
-            self.player = Player.instance
 
-        def move(self):
-            # self.x and self.y are floats (decimals) so I get more accuracy
-            # if I change self.x and y and then convert to an integer for
-            # the rectangle.
-            self.pos_x = self.pos_x + self.dx
-            self.pos_y = self.pos_y + self.dy
-            self.rect.x = self.pos_x
-            self.rect.y = self.pos_y
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, targetx, targety, pos_x, pos_y):
+        super().__init__()
+        self.image = config.BULLET_IMAGE
+        self.rect = self.image.get_rect()
+        angle = math.atan2(targety - pos_y, targetx - pos_x)  # get angle to target in radians
+        # print('Angle in degrees:', int(angle * 180 / math.pi))
+        self.speed = 30
+        self.dx = math.cos(angle) * self.speed
+        self.dy = math.sin(angle) * self.speed
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+        self.camera_rect = self.rect.copy()
 
-        # Override
-        def draw(self, surface: pygame.Surface) -> None:
-            surface.blit(self.image, self.rect)
-            if self.camera_rect.y + self.rect.height > config.YWIN:
-                self.player.remove_bullet(self)
+    def move(self):
+        # self.x and self.y are floats (decimals) so I get more accuracy
+        # if I change self.x and y and then convert to an integer for
+        # the rectangle.
+        self.pos_x = self.pos_x + self.dx
+        self.pos_y = self.pos_y + self.dy
+        self.rect.x = self.pos_x
+        self.rect.y = self.pos_y
+
+    # Override
+    def draw(self, surface: pygame.Surface) -> None:
+        surface.blit(self.image, self.rect)
+        if self.camera_rect.y + self.rect.height > config.YWIN:
+            Player.instance.remove_bullet(self)

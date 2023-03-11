@@ -24,9 +24,11 @@ FOREST_GREEN = (87, 189, 68)
 
 # Player
 PLAYER_SIZE = (60, 58)
-BULLET_SIZE = (15,15)
+BULLET_SIZE = (15, 15)
 PLAYER_IMAGE_RIGHT = pygame.transform.scale(pygame.image.load("images/doodle_r.png"), PLAYER_SIZE)
-PLAYER_IMAGE_LEFT = pygame.transform.scale(pygame.image.load("images/doodle_r.png"), PLAYER_SIZE)
+PLAYER_IMAGE_LEFT = pygame.transform.flip(PLAYER_IMAGE_RIGHT, True, False)
+PLAYER_IMAGE_JUMP_RIGHT = pygame.transform.scale(pygame.image.load("images/doodle_jump.png"), PLAYER_SIZE)
+PLAYER_IMAGE_JUMP_LEFT = pygame.transform.flip(PLAYER_IMAGE_JUMP_RIGHT, True, False)
 PLAYER_IMAGE_SHOOT = pygame.transform.scale(pygame.image.load("images/shoot_player.png"), (40, 80))
 BULLET_IMAGE = pygame.transform.scale(pygame.image.load("images/bullet.png"), BULLET_SIZE)
 BULLET_SPEED = 60
@@ -58,8 +60,8 @@ TRAMP_SPAWN_CHANCE = 30
 BREAKABLE_PLATFORM_CHANCE = 15
 MOVEABLE_PLATFORM_CHANCE = 10
 
-SPRING_IMAGES = (PLATFORM_SPRING_IMAGE,PLATFORM_SPRING_OPEN_IMAGE)
-TRAMP_IMAGES = (PLATFORM_TRAMP_IMAGE,PLATFORM_TRAMP_IMAGE )
+SPRING_IMAGES = (PLATFORM_SPRING_IMAGE, PLATFORM_SPRING_OPEN_IMAGE)
+TRAMP_IMAGES = (PLATFORM_TRAMP_IMAGE, PLATFORM_TRAMP_IMAGE)
 
 # Fonts
 LARGE_FONT = SysFont("arial-bold", 100)
