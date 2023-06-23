@@ -4,11 +4,11 @@ import pygame.sprite
 from pygame import *
 from pygame.event import Event
 import settings as config
-from newGame.camera import Camera
-from newGame.level import Level, Platform, Monstor
+from camera import Camera
+from level import Level, Platform, Monstor
 import math as math
 
-from newGame.singleton import Singleton
+from singleton import Singleton
 
 getsign = lambda x: copysign(1, x)
 

@@ -6,8 +6,8 @@ import pygame.sprite as sprite
 from pygame import Surface
 
 import settings as config
-from newGame.camera import Camera
-from newGame.singleton import Singleton
+from camera import Camera
+from singleton import Singleton
 
 chance = lambda x: not randint(0, x)
 

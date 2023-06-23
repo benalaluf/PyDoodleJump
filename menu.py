@@ -3,8 +3,7 @@ import sys
 
 import pygame
 import settings as config
-from newGame.level import Platform
-from newGame.singleton import Singleton
+from singleton import Singleton
 
 
 class MainMenu(Singleton):

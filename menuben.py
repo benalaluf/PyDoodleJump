@@ -1,11 +1,10 @@
 import pygame, sys
 from pygame.font import SysFont
 import settings as config
-
 from button import Button
-from newGame.game import Game
-from newGame.level import Platform
-from newGame.player import Player
+from game import Game
+from level import Platform
+from player import Player
 
 pygame.init()
 

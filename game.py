@@ -1,13 +1,11 @@
-import random
-
-import pygame, sys
+import pygame
 
 # General SetUp
-from newGame.camera import Camera
-from newGame.level import Level
-from newGame.player import Player
+from camera import Camera
+from level import Level
+from player import Player
 import settings as config
-from newGame.singleton import Singleton
+from singleton import Singleton
 
 class Game(Singleton):
     def __init__(self):
